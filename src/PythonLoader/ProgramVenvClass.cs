@@ -6,9 +6,9 @@
     using Python.Runtime;
     using HeyShelli;
 
-    public class ProgramVenv
+    public class ProgramVenvClass
     {
-        public static void MainVenv(string[] args)
+        public static void Main(string[] args)
         {
             try
             {
@@ -31,7 +31,7 @@
                  * 
                  */
 
-                string script = Inputty.GetString("Module name: ", "script", false);
+                string script = Inputty.GetString("Module name: ", "scriptPerson", false);
 
                 #region Set-Runtime-and-Initialize
 
@@ -146,7 +146,19 @@
 
                         // execute
                         dynamic app = Py.Import(script);
-                        Console.WriteLine(app.multiply(2, 4));
+
+                        Person joel = new Person
+                        {
+                            First = "Joel",
+                            Last = "Christner",
+                            Age = 47
+                        };
+
+                        PyObject resp = app.hello(joel.ToDictionary());
+                        string json = resp.ToString();
+
+                        Console.WriteLine("--- In caller ---");
+                        Console.WriteLine(json);
                     }
                 }
 
@@ -155,6 +167,26 @@
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
+            }
+        }
+
+        public class Person
+        {
+            public string First { get; set; }
+            public string Last { get; set; }
+            public int Age { get; set; }
+            public Dictionary<string, object> ToDictionary()
+            {
+                Dictionary<string, object> ret = new Dictionary<string, object>();
+                ret.Add("First", First);
+                ret.Add("Last", Last);
+                ret.Add("Age", Age);
+                return ret;
+            }
+
+            public Person()
+            {
+
             }
         }
     }

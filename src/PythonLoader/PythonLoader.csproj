@@ -17,6 +17,9 @@
     <None Update="requirements.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="scriptPerson.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="script.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
