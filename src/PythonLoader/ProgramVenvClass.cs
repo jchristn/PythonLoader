@@ -10,6 +10,8 @@
     {
         public static void Main(string[] args)
         {
+            string cmd = "";
+
             try
             {
                 /*
@@ -77,16 +79,18 @@
                     {
                         Console.WriteLine("Installing requirements from requirements.txt");
 
-                        string cmd = 
+                        cmd = 
                             "py -m venv venv " + 
                             "&& venv\\scripts\\activate " +
-                            "&& pip install -r requirements.txt";
+                            "&& pip install -r requirements.txt " +
+                            "&& venv\\scripts\\deactivate";
 
                         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
                             cmd = "python3 -m venv venv " +
                                 "; source venv/bin/activate " +
-                                "; pip install -r requirements.txt";
+                                "; pip install -r requirements.txt " +
+                                "; deactivate";
                         }
 
                         Shelli.Go(cmd);
@@ -97,6 +101,7 @@
                     Console.WriteLine("Reusing virtual environment: " + pathVirtualEnvironment);
                 }
 
+                /*
                 string pathVariable = Environment.GetEnvironmentVariable("PATH");
                 if (String.IsNullOrEmpty(pathVariable)) pathVariable = "";
                 pathVariable = pathVariable.TrimEnd(';').TrimEnd(':');
@@ -116,6 +121,7 @@
 
                 PythonEngine.PythonHome = pathVirtualEnvironment;
                 PythonEngine.PythonPath = PythonEngine.PythonPath + ";" + Environment.GetEnvironmentVariable("PYTHONPATH", EnvironmentVariableTarget.Process);
+                */
 
                 #endregion
 
@@ -140,9 +146,19 @@
                 {
                     using (PyModule scope = Py.CreateScope())
                     {
+                        // enter virtual environment
+                        cmd = "venv\\scripts\\activate";
+                        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                            cmd = "source venv/bin/activate";
+                        Shelli.Go(cmd);
+                        Console.WriteLine("Entered virtual environment using " + cmd);
+
                         // see https://stackoverflow.com/questions/78531348/python-net-issue-working-with-modules-on-ubuntu-22-04-but-works-on-windows-11/78531399
-                        scope.Import("sys");
-                        scope.Exec(@"if '' not in sys.path: sys.path.insert(0, '')");
+                        scope.Import("sys"); 
+                        string localDirectory = Path.GetFullPath(".").Replace("\\", "\\\\");
+                        Console.WriteLine("Using local directory: " + localDirectory);
+
+                        scope.Exec(@"if '" + localDirectory + "' not in sys.path: sys.path.insert(0, '" + localDirectory + "')");
 
                         // execute
                         dynamic app = Py.Import(script);
@@ -159,6 +175,11 @@
 
                         Console.WriteLine("--- In caller ---");
                         Console.WriteLine(json);
+
+                        // exit virtual environment
+                        cmd = "deactivate";
+                        Shelli.Go(cmd);
+                        Console.WriteLine("Exited virtual environment using " + cmd);
                     }
                 }
 
